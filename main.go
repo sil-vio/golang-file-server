@@ -13,81 +13,10 @@ import (
 
 // compiling/caching the template
 
-var templates = template.Must(template.New("tmpl").Parse(`
-<html>
-
-<head>
-    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-    <title>File Server</title>
-</head>
-
-<body>
-    <div class="container">
-        <div class="panel">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <div class="hero hero-sm bg-primary">
-                        <div class="hero-body">
-                            <h1>Go Files Server</h1>
-                            <p>A simple golang files server</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-nav">
-            </div>
-            <div class="panel-body">
-				<div>
-				{{ if .Message }}
-                <div class="toast toast-success">
-                    <button class="btn btn-clear float-right"></button>
-                    {{.Message}}
-				</div>
-				{{ end }}
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Size</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range .Files}}
-                            <tr class="active">
-                                <td><a href="./download?filename={{.Name}}"><b>{{.Name }}</b> </a></td>
-                                <td>{{.Size}}</td>
-                                <td>{{.ModTime}}</td>
-                            </tr>
-                            {{end}}
-
-                        </tbody>
-                    </table>
-
-                    </ul>
-                </div>
-            </div>
-			<div class="panel-footer">
-				<div class="columns">
-					<div class="column col-12 col-sm-12">
-						<form  class="form-horizontal" method="post" action="/upload" enctype="multipart/form-data">
-							<div class="input-group">
-								<input type="file" name="myfiles" id="myfiles" multiple="multiple" class="form-input input-lg">
-								<input type="submit" name="submit" value="Submit" class="btn btn-primary input-group-btn btn-lg">
-							</div>
-						</form>
-					</div>
-				</div>
-            </div>
-        </div>
-    </div>
-</body>
-
-</html>
-`))
+var templates = template.Must(template.New("index.html").ParseFiles("./templates/index.html"))
 
 func listFile() []os.FileInfo {
-	f, err := os.Open(".")
+	f, err := os.Open("./data/")
 	if err != nil {
 		log.Print(err)
 	}
@@ -138,7 +67,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// prepare the dst
-			dst, err := os.Create("./" + part.FileName())
+			dst, err := os.Create("./data/" + part.FileName())
 			defer dst.Close()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -175,7 +104,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// open the requested file
 		log.Println("File requested: ", filename)
-		file, err := os.Open("./" + filename)
+		file, err := os.Open("./data/" + filename)
 		if err != nil {
 			log.Printf("can't find requested file: %v", err)
 			http.Error(w, "can't find requested file", http.StatusBadRequest)
@@ -209,9 +138,9 @@ func main() {
 	http.HandleFunc("/site", uploadHandler)
 	http.HandleFunc("/upload", uploadHandler)
 	http.HandleFunc("/download", downloadHandler)
-	log.Print("Listening on port:8080...")
+	log.Print("Listening on port:4200...")
 	// Listen on port 8080
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":4200", nil)
 	if err != nil {
 		log.Panicln("errore start server: ", err)
 	}

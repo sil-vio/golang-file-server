@@ -15,32 +15,78 @@ import (
 
 var templates = template.Must(template.New("tmpl").Parse(`
 <html>
-  <head>
-    <title>Upload Form</title>
-  </head>
-  <body>
+
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+    <title>File Server</title>
+</head>
+
+<body>
     <div class="container">
-      <h1>Upload</h1>
-      <div class="message">{{.Message}}</div>
-      <form class="form-signin" method="post" action="/upload" enctype="multipart/form-data">
-          <fieldset>
-            <input type="file" name="myfiles" id="myfiles" multiple="multiple">
-            <input type="submit" name="submit" value="Submit">
-        </fieldset>
-	  </form>
-	  <div>
-	    <ul>
-	  	  {{range .Files}}
-    		<li><a  href="./download?filename={{.Name}}" ><b>{{.Name }}</b> </a>  bytes {{.Size}}</li>
-		  {{end}}
-	    </ul>
-	  </div>
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <div class="hero hero-sm bg-primary">
+                        <div class="hero-body">
+                            <h1>Go Files Server</h1>
+                            <p>A simple golang files server</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-nav">
+            </div>
+            <div class="panel-body">
+				<div>
+				{{ if .Message }}
+                <div class="toast toast-success">
+                    <button class="btn btn-clear float-right"></button>
+                    {{.Message}}
+				</div>
+				{{ end }}
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Size</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Files}}
+                            <tr class="active">
+                                <td><a href="./download?filename={{.Name}}"><b>{{.Name }}</b> </a></td>
+                                <td>{{.Size}}</td>
+                                <td>{{.ModTime}}</td>
+                            </tr>
+                            {{end}}
+
+                        </tbody>
+                    </table>
+
+                    </ul>
+                </div>
+            </div>
+			<div class="panel-footer">
+				<div class="columns">
+					<div class="column col-12 col-sm-12">
+						<form  class="form-horizontal" method="post" action="/upload" enctype="multipart/form-data">
+							<div class="input-group">
+								<input type="file" name="myfiles" id="myfiles" multiple="multiple" class="form-input input-lg">
+								<input type="submit" name="submit" value="Submit" class="btn btn-primary input-group-btn btn-lg">
+							</div>
+						</form>
+					</div>
+				</div>
+            </div>
+        </div>
     </div>
-  </body>
+</body>
+
 </html>
 `))
 
-func uploadHandler(w http.ResponseWriter, r *http.Request) {
+func listFile() []os.FileInfo {
 	f, err := os.Open(".")
 	if err != nil {
 		log.Print(err)
@@ -57,12 +103,17 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 			onlyfiles = append(onlyfiles, file)
 		}
 	}
+	return onlyfiles
+}
+
+func uploadHandler(w http.ResponseWriter, r *http.Request) {
+
 	switch r.Method {
 	// GET to display the upload form.
 	case "GET":
 
-		err = templates.Execute(w, map[string]interface{}{
-			"Files": onlyfiles})
+		err := templates.Execute(w, map[string]interface{}{
+			"Files": listFile()})
 		if err != nil {
 			log.Print(err)
 		}
@@ -102,7 +153,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// displaying a success message.
 		err = templates.Execute(w, map[string]interface{}{
-			"Files": onlyfiles, "Message": "Upload successful."})
+			"Files": listFile(), "Message": "Upload successful."})
 		if err != nil {
 			log.Print(err)
 		}
@@ -155,6 +206,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	http.HandleFunc("/site", uploadHandler)
 	http.HandleFunc("/upload", uploadHandler)
 	http.HandleFunc("/download", downloadHandler)
 	log.Print("Listening on port:8080...")

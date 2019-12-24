@@ -1,13 +1,14 @@
 package handler
 
 import (
-	fileManager "github.com/sil-vio/golang-file-server/file"
 	"fmt"
+	fileManager "github.com/sil-vio/golang-file-server/file"
 	"io"
 	"log"
 	"net/http"
 )
 
+// DownloadHandler ..
 func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":

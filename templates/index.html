@@ -1,6 +1,7 @@
 <html>
 
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
 	<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
 	<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
@@ -9,64 +10,75 @@
 
 <body>
 	<div class="container">
-		<div class="panel">
-			<div class="panel-header">
-				<div class="panel-title">
-					<div class="hero hero-sm bg-primary">
-						<div class="hero-body">
-							<h1>Go Files Server</h1>
-							<p>A simple golang files server</p>
+		<div class="columns ">
+			<div class="panel col-12">
+				<div class="panel-header">
+					<div class="panel-title">
+						<div class="hero hero-sm bg-primary">
+							<div class="hero-body">
+								<h1>Go Files Server</h1>
+								<p>A simple golang files server</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel-nav">
+				</div>
+				<div class="panel-body">
+					<div>
+						{{ if .Message }}
+						<div class="toast toast-success" id="successToast">
+							<button class="btn btn-clear float-right" onclick="removeToast()"></button>
+							{{.Message}}
+						</div>
+						{{ end }}
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Size</th>
+									<th>Date</th>
+								</tr>
+							</thead>
+							<tbody>
+								{{range .Files}}
+								<tr class="active">
+									<td><a href="./download?filename={{.Name}}"><b>{{.Name }}</b> </a></td>
+									<td>{{.Size}}</td>
+									<td>{{.ModTime}}</td>
+								</tr>
+								{{end}}
+
+							</tbody>
+						</table>
+
+						</ul>
+					</div>
+				</div>
+				<div class="panel-footer">
+					<div class="columns">
+						<div class="column col-12 col-sm-12">
+							<form class="form-horizontal" method="post" action="/upload" enctype="multipart/form-data">
+								<div class="input-group">
+									<input type="file" name="myfiles" id="myfiles" multiple="multiple"
+										class="form-input input-lg">
+									<input type="submit" name="submit" value="Upload"
+										class="btn btn-primary input-group-btn btn-lg"
+										style="height: 2.3rem !important;">
+								</div>
+							</form>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="panel-nav">
-			</div>
-			<div class="panel-body">
-				<div>
-					{{ if .Message }}
-					<div class="toast toast-success">
-						<button class="btn btn-clear float-right"></button>
-                    {{.Message}}
-				</div>
-				{{ end }}
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Size</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range .Files}}
-                            <tr class="active">
-                                <td><a href="./download?filename={{.Name}}"><b>{{.Name }}</b> </a></td>
-                                <td>{{.Size}}</td>
-                                <td>{{.ModTime}}</td>
-                            </tr>
-                            {{end}}
-
-                        </tbody>
-                    </table>
-
-                    </ul>
-                </div>
-            </div>
-			<div class="panel-footer">
-				<div class="columns">
-					<div class="column col-12 col-sm-12">
-						<form  class="form-horizontal" method="post" action="/upload" enctype="multipart/form-data">
-							<div class="input-group">
-								<input type="file" name="myfiles" id="myfiles" multiple="multiple" class="form-input input-lg" >
-								<input type="submit" name="submit" value="Upload" class="btn btn-primary input-group-btn btn-lg" style="height: 2.3rem !important;">
-							</div>
-						</form>
-					</div>
-				</div>
-            </div>
-        </div>
-    </div>
+		</div>
+	</div>
 </body>
+<script>
+	function removeToast() {
+		var ele = document.getElementById('successToast');
+		ele.parentNode.removeChild(ele);
+	}
+</script>
 
 </html>
